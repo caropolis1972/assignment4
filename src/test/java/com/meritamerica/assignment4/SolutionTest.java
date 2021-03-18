@@ -76,7 +76,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testDepositPositiveAmountInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testDepositPositiveAmountInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -89,7 +89,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testDepositNegativeAmountInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testDepositNegativeAmountInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -102,7 +102,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testDepositPositiveAmountInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testDepositPositiveAmountInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -115,7 +115,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testDepositNegativeAmountInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testDepositNegativeAmountInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -128,7 +128,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testWithdrawAmountExceedingBalanceInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testWithdrawAmountExceedingBalanceInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -141,7 +141,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testWithdrawAmountExceedingBalanceInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testWithdrawAmountExceedingBalanceInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -153,8 +153,8 @@ public class SolutionTest {
         assertEquals(false, savingsAccount.withdraw(500.0));
     }
     
-    @Test(expected = ExceedsFraudSuspicionLimitException.class)
-    public void testWithdrawFromCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    @Test(expected = ExceedsFraudSuspicionLimitexception.class)
+    public void testWithdrawFromCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -166,8 +166,8 @@ public class SolutionTest {
         assertEquals(false, cdAccount.withdraw(500.0));
     }
     
-    @Test(expected = ExceedsFraudSuspicionLimitException.class)
-    public void testDepositIntoCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    @Test(expected = ExceedsFraudSuspicionLimitexception.class)
+    public void testDepositIntoCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitexception{
     	AccountHolder accountHolder = new AccountHolder(
             	"Sadiq",
             	"",
@@ -180,7 +180,7 @@ public class SolutionTest {
     }
 
     @Test
-    public void testFutureValueInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testFutureValueInSavingsAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
         AccountHolder accountHolder = new AccountHolder(
         	"Sadiq",
         	"",
@@ -198,7 +198,7 @@ public class SolutionTest {
     
 
     @Test
-    public void testFutureValueInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    public void testFutureValueInCheckingAccount() throws ExceedsCombinedBalanceLimitException, NegativeAmountException, ExceedsFraudSuspicionLimitexception{
         AccountHolder accountHolder = new AccountHolder(
         	"Sadiq",
         	"",
@@ -212,8 +212,8 @@ public class SolutionTest {
         assertEquals(fv, checkingAccount.futureValue(3), 0.1);
     }
     
-    @Test(expected = ExceedsFraudSuspicionLimitException.class)
-    public void testFutureValueInCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitException{
+    @Test(expected = ExceedsFraudSuspicionLimitexception.class)
+    public void testFutureValueInCDAccount() throws NegativeAmountException, ExceedsFraudSuspicionLimitexception{
         AccountHolder accountHolder = new AccountHolder(
         	"Sadiq",
         	"",
@@ -391,7 +391,7 @@ public class SolutionTest {
     	MeritBank.processTransaction(withdrawTransaction);
     }   
     
-    @Test(expected = ExceedsFraudSuspicionLimitException.class)
+    @Test(expected = ExceedsFraudSuspicionLimitexception.class)
     public void testProcessTransactionThrowExceedsFraudSuspicionLimitException() throws Exception {   
     	
     	AccountHolder accountHolder = new AccountHolder(
