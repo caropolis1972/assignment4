@@ -272,5 +272,30 @@ public class AccountHolder {
 	    return 0;
 	}
     }
+    
+    CheckingAccount addCheckingAccount1(double openingBalance) throws ExceedsCombinedBalanceLimitException{
+    	
+    }
+    
+    CheckingAccount addCheckingAccount1(CheckingAccount chekingAccount) throws ExceedsCombinedBalanceLimitException{
+    	
+    }
+    
+    SavingsAccount addSavingsAccount1(double openingBalance) throws ExceedsCombinedBalanceLimitException{
+    	
+    }
+    
+    SavingsAccount addSavingsAccount1(SavingsAccount savingsAccount) throws ExceedsCombinedBalanceLimitException{
+    	
+    }
+    
+    CDAccount addCDAccount1(CDOffering offering, double openingBalance) {
+		return null;
+    	
+    }
+    
+    CDAccount addCDAccount1(CDAccount cdAccount) {
+    	return null;
+    }
 }
 

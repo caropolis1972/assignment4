@@ -6,7 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
 
-public class BankAccount {
+public abstract class  BankAccount {
 	
 	 // Instance variables
     private long accountNumber;
@@ -86,4 +86,10 @@ public class BankAccount {
 	return this.getAccountNumber() + "," + this.getBalance() + "," + this.getInterestRate() + ","
 		+ this.getOpenedOn();
     }
+    
+    public void addTransation(Transaction transaction) {
+    	
+    }
+    
+    public List<Transaction> getTransaction;
 }

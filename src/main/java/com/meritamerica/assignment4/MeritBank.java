@@ -242,4 +242,31 @@ public class MeritBank {
 	Collections.sort(Arrays.asList(getAccountHolders()));
 	return getAccountHolders();
     }
+    
+    public static double recursiveFutureValue(double amount, int years, double intrestRate) {
+		return 1.00;
+    }
+    
+    public static boolean processTransaction(Transaction transaction) throws NegativeAmountException, ExceedsAvailableBalanceExeption,
+    ExceedsFraudSuspicionLimitException{
+    	
+    	
+    }
+    
+    public static FraudQueue getFraudQueue() {
+    	return null;
+    }
+    
+    public static BankAccount getBankAccount(long accountId) {
+    	return null;
+    }
+    
+    static boolean readFromFile1(String fileName) {
+		return false;
+	}
+    
+    static boolean writeToFile1(String fileName) {
+		return false;
+    }
+    
 }
