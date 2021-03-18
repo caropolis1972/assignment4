@@ -4,6 +4,11 @@ import java.util.Date.*;
 
 public abstract class Transaction {
 
+	
+	protected BankAccount targetAccount;
+	protected double amount;
+	protected BankAccount sourceAccount;
+	
 	public BankAccount getSourceAccount() {
 		return null;
 	}
