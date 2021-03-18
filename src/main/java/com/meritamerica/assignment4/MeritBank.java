@@ -247,8 +247,9 @@ public class MeritBank {
 		return 1.00;
     }
     
-    public static boolean processTransaction(Transaction transaction) throws NegativeAmountException, ExceedsAvailableBalanceExeption,
-    ExceedsFraudSuspicionLimitException{
+    public static boolean processTransaction(Transaction transaction) throws NegativeAmountException, ExceedsAvailableBalanceException,
+    ExceedsFraudSuspicionLimitexception{
+		return false;
     	
     	
     }

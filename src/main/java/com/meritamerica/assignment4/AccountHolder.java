@@ -274,18 +274,22 @@ public class AccountHolder {
     }
     
     CheckingAccount addCheckingAccount1(double openingBalance) throws ExceedsCombinedBalanceLimitException{
+		return null;
     	
     }
     
     CheckingAccount addCheckingAccount1(CheckingAccount chekingAccount) throws ExceedsCombinedBalanceLimitException{
+		return null;
     	
     }
     
     SavingsAccount addSavingsAccount1(double openingBalance) throws ExceedsCombinedBalanceLimitException{
+		return null;
     	
     }
     
     SavingsAccount addSavingsAccount1(SavingsAccount savingsAccount) throws ExceedsCombinedBalanceLimitException{
+		return null;
     	
     }
     
