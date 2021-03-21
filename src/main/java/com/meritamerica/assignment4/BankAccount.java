@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 public abstract class BankAccount {
     // Instance variables
@@ -73,7 +74,7 @@ public abstract class BankAccount {
     }
 
     public double futureValue(int years) {
-	return (this.balance * (Math.pow(1 + this.getInterestRate(), years)));
+	return (this.balance * (MeritBank.pow(1 + this.getInterestRate(), years)));
     }
 
     public static BankAccount readFromString(String accountData) throws ParseException {

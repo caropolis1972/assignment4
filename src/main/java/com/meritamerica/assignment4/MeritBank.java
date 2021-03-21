@@ -15,6 +15,7 @@ public class MeritBank {
     private static AccountHolder[] accountHolders = new AccountHolder[0];
     private static CDOffering[] cdOfferings = new CDOffering[0];
     private static long nextAccountNumber = 1;
+    private static FraudQueue fraudQueue = new FraudQueue();
 
     public static void addAccountHolder(AccountHolder accountHolder) {
 	AccountHolder[] newAccountHolders = new AccountHolder[accountHolders.length + 1];
@@ -108,7 +109,19 @@ public class MeritBank {
     }
 
     public static double futureValue(double presentValue, double interestRate, int term) {
-	return (presentValue * (Math.pow(1 + interestRate, term)));
+	return recursiveFutureValue(presentValue, term, interestRate);
+    }
+
+    public static double recursiveFutureValue(double amount, int years, double interestRate) {
+	return (amount * (pow(1 + interestRate, years)));
+    }
+
+    public static double pow(double base, int exponent) {
+	if (exponent == 1) {
+	    return base;
+	} else {
+	    return base * pow(base, exponent - 1);
+	}
     }
 
     // Should also read BankAccount transactions and the FraudQueue
@@ -242,6 +255,32 @@ public class MeritBank {
 	/* Sort statement */
 	Collections.sort(Arrays.asList(getAccountHolders()));
 	return getAccountHolders();
+    }
+
+    public static boolean processTransaction(Transaction transaction)
+	    throws NegativeAmountException, ExceedsAvailableBalanceException, ExceedsFraudSuspicionLimitException {
+	boolean result = true;
+
+	try {
+	    // Process transaction to check whether it violates any constraints.
+	    transaction.process();
+	} catch (ExceedsFraudSuspicionLimitException ex) {
+	    FraudQueue queue = getFraudQueue();
+	    queue.addTransaction(transaction);
+
+	    result = false;
+	}
+
+	return result;
+    }
+
+    public static FraudQueue getFraudQueue() {
+	return fraudQueue;
+    }
+
+    public static BankAccount getBankAccount(long accountId) {
+	// Return null when account not found.
+	return null;
     }
 
 }

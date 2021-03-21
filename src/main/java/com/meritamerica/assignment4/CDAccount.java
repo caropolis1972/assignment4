@@ -52,7 +52,7 @@ public class CDAccount extends BankAccount {
     }
 
     public double futureValue() {
-	return (super.getBalance() * (Math.pow(1 + this.getInterestRate(), this.getTerm())));
+	return (super.getBalance() * (MeritBank.pow(1 + this.getInterestRate(), this.getTerm())));
     }
 
 }
