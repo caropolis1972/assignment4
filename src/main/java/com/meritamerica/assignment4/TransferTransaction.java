@@ -25,7 +25,7 @@ public class TransferTransaction extends Transaction {
 	}
 
 	// 3. Transfer amount exceeding $1,000 must be reviewed by the fraud team
-	if (amount > FRAUD_LIMIT) {
+	if (amount > MeritBank.FRAUD_LIMIT) {
 	    throw new ExceedsFraudSuspicionLimitException();
 	}
 

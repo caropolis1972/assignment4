@@ -16,7 +16,7 @@ public class WithdrawTransaction extends Transaction {
 	double amount = this.getAmount();
 
 	// Check for fraud suspicion (amount exceeds $1000)
-	if (amount > FRAUD_LIMIT) {
+	if (amount > MeritBank.FRAUD_LIMIT) {
 	    throw new ExceedsFraudSuspicionLimitException();
 	}
 

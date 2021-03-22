@@ -1,17 +1,22 @@
 package com.meritamerica.assignment4;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class BankAccount {
+    protected static final int MIN_TRANSACTIONS = 1;
+
     // Instance variables
     private long accountNumber;
     private double balance;
     private double interestRate;
     private Date accountOpenedOn;
+
+    private ArrayList<Transaction> transactions;
 
     // Constructor w/ 2 parameters
     public BankAccount(double balance, double interestRate) {
@@ -29,6 +34,7 @@ public abstract class BankAccount {
 	this.balance = balance;
 	this.interestRate = interestRate;
 	this.accountOpenedOn = accountOpenedOn;
+	this.transactions = new ArrayList<Transaction>();
     }
 
     public long getAccountNumber() {
@@ -66,31 +72,36 @@ public abstract class BankAccount {
     }
 
     public void addTransaction(Transaction transaction) {
-
+	this.transactions.add(transaction);
     }
 
     public List<Transaction> getTransactions() {
-
+	return this.transactions;
     }
 
     public double futureValue(int years) {
 	return (this.balance * (MeritBank.pow(1 + this.getInterestRate(), years)));
     }
 
-    public static BankAccount readFromString(String accountData) throws ParseException {
-	String[] arrayCD = accountData.split(",");
-	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-	try {
-
-	    return new BankAccount(Long.parseLong(arrayCD[0]), Double.parseDouble(arrayCD[1]),
-		    Double.parseDouble(arrayCD[2]), dateFormat.parse(arrayCD[3]));
-	} catch (Exception ex) {
-	    throw new NumberFormatException(ex.getMessage());
-	}
-    }
-
     public String writeToString() {
-	return this.getAccountNumber() + "," + this.getBalance() + "," + this.getInterestRate() + ","
-		+ this.getOpenedOn();
+	DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+	df.setMaximumFractionDigits(4);
+
+	String output = this.getAccountNumber() + "," + this.getBalance() + "," + df.format(this.getInterestRate())
+		+ "," + MeritBank.DATE_FORMAT.format(this.getOpenedOn()) + "\n";
+
+	// Get list of transactions.
+	List<Transaction> transactions = this.getTransactions();
+
+	// Append the number of transactions to the output.
+	output += transactions.size() + "\n";
+
+	// Append one line per transaction.
+	for (int transactionIndex = 0; transactionIndex < transactions.size(); transactionIndex++) {
+	    Transaction transaction = transactions.get(transactionIndex);
+	    output += transaction.writeToString() + "\n";
+	}
+
+	return output.trim();
     }
 }

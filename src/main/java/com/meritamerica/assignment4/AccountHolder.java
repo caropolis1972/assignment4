@@ -1,6 +1,10 @@
 package com.meritamerica.assignment4;
 
+import java.util.ArrayList;
+
 public class AccountHolder implements Comparable<AccountHolder> {
+    private static final double COMBINED_BALANCE_LIMIT = 250000.0;
+
     // Instance variables
     private String firstName;
     private String middleName;
@@ -57,9 +61,10 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	return this.addCheckingAccount(checkingAccount);
     }
 
-    public CheckingAccount addCheckingAccount(CheckingAccount checkingAccount) {
-	if (this.getCombinedBalance() > 250000) {
-	    return null;
+    public CheckingAccount addCheckingAccount(CheckingAccount checkingAccount)
+	    throws ExceedsCombinedBalanceLimitException {
+	if (this.getCombinedBalance() > COMBINED_BALANCE_LIMIT) {
+	    throw new ExceedsCombinedBalanceLimitException();
 	}
 
 	CheckingAccount[] newCheckingAccounts = new CheckingAccount[this.checkingAccounts.length + 1];
@@ -68,6 +73,14 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	}
 	newCheckingAccounts[this.checkingAccounts.length] = checkingAccount;
 	this.checkingAccounts = newCheckingAccounts;
+
+	// Also add account to Merit Bank's map of accounts.
+	MeritBank.addBankAccount(checkingAccount);
+
+	// Create a deposit transaction with the opening balance.
+	DepositTransaction transaction = new DepositTransaction(checkingAccount, checkingAccount.getBalance());
+	transaction.setTransactionDate(checkingAccount.getOpenedOn());
+	checkingAccount.addTransaction(transaction);
 
 	return checkingAccount;
     }
@@ -89,14 +102,14 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	return checkingBalance;
     }
 
-    public SavingsAccount addSavingsAccount(double openingBalance) {
+    public SavingsAccount addSavingsAccount(double openingBalance) throws ExceedsCombinedBalanceLimitException {
 	SavingsAccount savingsAccount = new SavingsAccount(openingBalance);
 	return this.addSavingsAccount(savingsAccount);
     }
 
-    public SavingsAccount addSavingsAccount(SavingsAccount savingsAccount) {
-	if (this.getCombinedBalance() > 250000) {
-	    return null;
+    public SavingsAccount addSavingsAccount(SavingsAccount savingsAccount) throws ExceedsCombinedBalanceLimitException {
+	if (this.getCombinedBalance() > COMBINED_BALANCE_LIMIT) {
+	    throw new ExceedsCombinedBalanceLimitException();
 	}
 
 	SavingsAccount[] newSavingsAccounts = new SavingsAccount[this.savingsAccounts.length + 1];
@@ -105,6 +118,14 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	}
 	newSavingsAccounts[this.savingsAccounts.length] = savingsAccount;
 	this.savingsAccounts = newSavingsAccounts;
+
+	// Also add account to Merit Bank's map of accounts.
+	MeritBank.addBankAccount(savingsAccount);
+
+	// Create a deposit transaction with the opening balance.
+	DepositTransaction transaction = new DepositTransaction(savingsAccount, savingsAccount.getBalance());
+	transaction.setTransactionDate(savingsAccount.getOpenedOn());
+	savingsAccount.addTransaction(transaction);
 
 	return savingsAccount;
     }
@@ -126,7 +147,8 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	return savingsBalance;
     }
 
-    public CDAccount addCDAccount(CDOffering offering, double openingBalance) {
+    public CDAccount addCDAccount(CDOffering offering, double openingBalance)
+	    throws ExceedsFraudSuspicionLimitException {
 	if (offering == null)
 	    return null;
 
@@ -134,13 +156,27 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	return this.addCDAccount(cdAccount);
     }
 
-    public CDAccount addCDAccount(CDAccount cdAccount) {
+    public CDAccount addCDAccount(CDAccount cdAccount) throws ExceedsFraudSuspicionLimitException {
 	CDAccount[] newCDAccounts = new CDAccount[this.cdAccounts.length + 1];
 	for (int i = 0; i < this.cdAccounts.length; i++) {
 	    newCDAccounts[i] = this.cdAccounts[i];
 	}
 	newCDAccounts[this.cdAccounts.length] = cdAccount;
 	this.cdAccounts = newCDAccounts;
+
+	// Also add account to Merit Bank's map of accounts.
+	MeritBank.addBankAccount(cdAccount);
+
+	// Get opening balance to check for fraud suspicion (amount exceeds $1000)
+	double openingBalance = cdAccount.getBalance();
+	if (openingBalance > MeritBank.FRAUD_LIMIT) {
+	    throw new ExceedsFraudSuspicionLimitException();
+	}
+
+	// Create a deposit transaction with the opening balance.
+	DepositTransaction transaction = new DepositTransaction(cdAccount, cdAccount.getBalance());
+	transaction.setTransactionDate(cdAccount.getOpenedOn());
+	cdAccount.addTransaction(transaction);
 
 	return cdAccount;
     }
@@ -173,6 +209,8 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	    throw new Exception("Invalid Account Holder input data");
 	}
 	try {
+	    ArrayList<String> transactionLines = new ArrayList<String>();
+
 	    int numberOfLine = 0;
 	    // Parse Account Holder first identifier line: Last,Middle,First,SSN
 	    String[] ahArray = ahLineArray[numberOfLine].split(",");
@@ -184,9 +222,22 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	    numberOfLine++;
 
 	    // Parse Checking accounts: Acct#, balance, interest rate, openingDate
-	    for (int i = 0; i < numberOfCheckingAccounts; i++) {
-		accountHolder.addCheckingAccount(CheckingAccount.readFromString(ahLineArray[numberOfLine]));
+	    for (int accountCounter = 0; accountCounter < numberOfCheckingAccounts; accountCounter++) {
+		// Use next line to create account.
+		String accountData = ahLineArray[numberOfLine++];
+		accountHolder.addCheckingAccount(CheckingAccount.readFromString(accountData));
+
+		// Get next line which represents the number of transactions.
+		int transactionCount = Integer.parseInt(ahLineArray[numberOfLine++]);
+
+		// Skip first transaction.
 		numberOfLine++;
+
+		// Add the lines where transactions are included to the running list
+		// of all transaction lines for the account holder.
+		for (int transactionCounter = 1; transactionCounter < transactionCount; transactionCounter++) {
+		    transactionLines.add(ahLineArray[numberOfLine++]);
+		}
 	    }
 
 	    // Parse #ctas savings
@@ -194,20 +245,61 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	    numberOfLine++;
 
 	    // Parse Savings accounts: Acct#, balance, interest rate, openingDate
-	    for (int i = 0; i < numberOfSavingsAccounts; i++) {
-		accountHolder.addSavingsAccount(SavingsAccount.readFromString(ahLineArray[numberOfLine]));
+	    for (int accountCounter = 0; accountCounter < numberOfSavingsAccounts; accountCounter++) {
+		// Use next line to create account.
+		String accountData = ahLineArray[numberOfLine++];
+		accountHolder.addSavingsAccount(SavingsAccount.readFromString(accountData));
+
+		// Get next line which represents the number of transactions.
+		int transactionCount = Integer.parseInt(ahLineArray[numberOfLine++]);
+
+		// Skip first transaction.
 		numberOfLine++;
+
+		// Add the lines where transactions are included to the running list
+		// of all transaction lines for the account holder.
+		for (int transactionCounter = 1; transactionCounter < transactionCount; transactionCounter++) {
+		    transactionLines.add(ahLineArray[numberOfLine++]);
+		}
 	    }
 
 	    // Parse #ctas CD's
 	    int numberOfCDAccounts = Integer.parseInt(ahLineArray[numberOfLine]);
 	    numberOfLine++;
 
-	    // Parse Savings accounts: Acct#, balance, interest rate, openingDate
-	    for (int i = 0; i < numberOfCDAccounts; i++) {
-		accountHolder.addCDAccount(CDAccount.readFromString(ahLineArray[numberOfLine]));
+	    // Parse CD accounts: Acct#, balance, interest rate, openingDate
+	    for (int accountCounter = 0; accountCounter < numberOfCDAccounts; accountCounter++) {
+		// Use next line to create account.
+		String accountData = ahLineArray[numberOfLine++];
+		accountHolder.addCDAccount(CDAccount.readFromString(accountData));
+
+		// Get next line which represents the number of transactions.
+		int transactionCount = Integer.parseInt(ahLineArray[numberOfLine++]);
+
+		// Skip first transaction.
 		numberOfLine++;
+
+		// Add the lines where transactions are included to the running list
+		// of all transaction lines for the account holder.
+		for (int transactionCounter = 1; transactionCounter < transactionCount; transactionCounter++) {
+		    transactionLines.add(ahLineArray[numberOfLine++]);
+		}
 	    }
+
+	    for (int transactionIndex = 0; transactionIndex < transactionLines.size(); transactionIndex++) {
+		String transactionLine = transactionLines.get(transactionIndex);
+		Transaction transaction = Transaction.readFromString(transactionLine);
+
+		BankAccount sourceAccount = transaction.getSourceAccount();
+		if (sourceAccount != null) {
+		    sourceAccount.addTransaction(transaction);
+		} else {
+		    BankAccount targetAccount = transaction.getTargetAccount();
+		    targetAccount.addTransaction(transaction);
+		}
+
+	    }
+
 	    return accountHolder;
 
 	} catch (Exception ex) {
@@ -233,7 +325,7 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	int numberOfCheckingAccounts = this.getNumberOfCheckingAccounts();
 	CheckingAccount[] checkingAccountArray = this.getCheckingAccounts();
 	output += numberOfCheckingAccounts + "\n";
-	for (int i = 0; i <= numberOfCheckingAccounts; i++) {
+	for (int i = 0; i < numberOfCheckingAccounts; i++) {
 	    output += checkingAccountArray[i].writeToString() + "\n";
 	}
 
@@ -241,7 +333,7 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	int numberOfSavingsAccounts = this.getNumberOfSavingsAccounts();
 	SavingsAccount[] savingsAccountArray = this.getSavingsAccounts();
 	output += numberOfSavingsAccounts + "\n";
-	for (int i = 0; i <= numberOfSavingsAccounts; i++) {
+	for (int i = 0; i < numberOfSavingsAccounts; i++) {
 	    output += savingsAccountArray[i].writeToString() + "\n";
 	}
 
@@ -249,11 +341,11 @@ public class AccountHolder implements Comparable<AccountHolder> {
 	int numberOfCDAccounts = this.getNumberOfCDAccounts();
 	CDAccount[] cdAccountArray = this.getCDAccounts();
 	output += numberOfCDAccounts + "\n";
-	for (int i = 0; i <= numberOfCDAccounts; i++) {
+	for (int i = 0; i < numberOfCDAccounts; i++) {
 	    output += cdAccountArray[i].writeToString() + "\n";
 	}
 
-	return output;
+	return output.trim();
     }
 
     @Override

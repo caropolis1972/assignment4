@@ -6,16 +6,23 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 
 public class MeritBank {
+    public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+    public static final double FRAUD_LIMIT = 1000.0;
+
     // Class variables
     private static AccountHolder[] accountHolders = new AccountHolder[0];
     private static CDOffering[] cdOfferings = new CDOffering[0];
     private static long nextAccountNumber = 1;
     private static FraudQueue fraudQueue = new FraudQueue();
+    private static HashMap<Long, BankAccount> bankAccounts = new HashMap<Long, BankAccount>();
 
     public static void addAccountHolder(AccountHolder accountHolder) {
 	AccountHolder[] newAccountHolders = new AccountHolder[accountHolders.length + 1];
@@ -148,9 +155,34 @@ public class MeritBank {
 	    return false;
 	}
 
-	int numberOfLine = 0;
-
 	try {
+	    // Read from last line upward to capture Fraud Queue lines.
+	    LinkedList<String> fraudQueueLines = new LinkedList<String>();
+	    int fraudQueueStartLineNumber = lines.size() - 1;
+	    while (fraudQueueStartLineNumber >= 0) {
+		String line = lines.get(fraudQueueStartLineNumber);
+		try {
+		    // Attempt to parse next line to a number to check if we reached the
+		    // start of the fraud queue data.
+		    int fraudCount = Integer.parseInt(line);
+
+		    // Ensure we captured as many lines as the expected count, captured above.
+		    if (fraudQueueLines.size() == fraudCount) {
+			break;
+		    } else {
+			return false;
+		    }
+		} catch (NumberFormatException e) {
+		    // Add current line at the start of the collection.
+		    fraudQueueLines.addFirst(line);
+		}
+
+		fraudQueueStartLineNumber--;
+	    }
+
+	    // Initialize number of lines.
+	    int numberOfLine = 0;
+
 	    // read value and store next bank account number
 	    Long nextAccountNumber = Long.parseLong(lines.get(numberOfLine));
 	    numberOfLine++;
@@ -175,7 +207,7 @@ public class MeritBank {
 	    for (int i = 0; i < numberOfAccountHolders; i++) {
 		ArrayList<String> accountHolderLines = new ArrayList<String>();
 
-		if (numberOfLine >= lines.size()) {
+		if (numberOfLine >= fraudQueueStartLineNumber) {
 		    break;
 		}
 
@@ -183,16 +215,12 @@ public class MeritBank {
 		accountHolderLines.add(lines.get(numberOfLine));
 		numberOfLine++;
 
-		while (numberOfLine < lines.size()) {
-		    // Get first character of the line.
+		while (numberOfLine < fraudQueueStartLineNumber) {
+		    // Check the first character in the next line. If it's not a digit,
+		    // then we have reached the name of the next account holder and need to
+		    // break this loop. Otherwise, continue adding lines.
 		    String nextLineFirstChar = lines.get(numberOfLine).substring(0, 1);
-		    try {
-			// Attempt to convert the first character to a number to check if reached the
-			// end of the current account holder's data.
-			Integer.parseInt(nextLineFirstChar);
-		    } catch (NumberFormatException e) {
-			// If it's not a number, then we already reached the line of the next account
-			// holder's name.
+		    if (!Character.isDigit(nextLineFirstChar.charAt(0)) && !nextLineFirstChar.equalsIgnoreCase("-")) {
 			break;
 		    }
 
@@ -209,6 +237,15 @@ public class MeritBank {
 	    setCDOfferings(cdOfferingsArray);
 	    accountHolders = fileAccountHolders;
 
+	    FraudQueue queue = getFraudQueue();
+	    for (int i = 0; i < fraudQueueLines.size(); i++) {
+		// Get current line from the list and create a transaction from it.
+		String line = fraudQueueLines.get(i);
+		Transaction transaction = Transaction.readFromString(line);
+
+		queue.addTransaction(transaction);
+	    }
+
 	} catch (Exception ex) {
 	    return false;
 	}
@@ -224,7 +261,7 @@ public class MeritBank {
 	CDOffering[] cdOfferingsArray = getCDOfferings();
 	int numberOfCDOfferings = cdOfferingsArray.length;
 	output += numberOfCDOfferings + "\n";
-	for (int i = 0; i <= numberOfCDOfferings; i++) {
+	for (int i = 0; i < numberOfCDOfferings; i++) {
 	    output += cdOfferingsArray[i].writeToString() + "\n";
 	}
 
@@ -232,7 +269,7 @@ public class MeritBank {
 	AccountHolder[] accountHoldersArray = getAccountHolders();
 	int numberOfAccountHolders = accountHoldersArray.length;
 	output += numberOfAccountHolders + "\n";
-	for (int i = 0; i <= numberOfAccountHolders; i++) {
+	for (int i = 0; i < numberOfAccountHolders; i++) {
 	    output += accountHoldersArray[i].writeToString() + "\n";
 	}
 
@@ -268,7 +305,8 @@ public class MeritBank {
 	    FraudQueue queue = getFraudQueue();
 	    queue.addTransaction(transaction);
 
-	    result = false;
+	    // result = false;
+	    throw ex;
 	}
 
 	return result;
@@ -278,9 +316,19 @@ public class MeritBank {
 	return fraudQueue;
     }
 
-    public static BankAccount getBankAccount(long accountId) {
+    public static BankAccount getBankAccount(long accountNumber) {
+	// Check if an account matches the account number.
+	if (bankAccounts.containsKey(accountNumber)) {
+	    // Return BankAccount object.
+	    return bankAccounts.get(accountNumber);
+	}
+
 	// Return null when account not found.
 	return null;
+    }
+
+    public static void addBankAccount(BankAccount bankAccount) {
+	bankAccounts.put(bankAccount.getAccountNumber(), bankAccount);
     }
 
 }
